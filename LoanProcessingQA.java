@@ -74,7 +74,7 @@ public class LoanProcessingQA {
         test("EMI Calculation Accuracy",
                 Math.abs(emi - 10138.20) < 1.0);
 
-        test("Invalid Negative Loan", !(-100000 > 0);
+        test("Invalid Negative Loan", !(-100000 > 0));
 
         test("Invalid Zero Loan", !(0 > 0));
 
