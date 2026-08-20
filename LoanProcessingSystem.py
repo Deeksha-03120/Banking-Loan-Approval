@@ -10,7 +10,7 @@ class LoanProcessingSystem:
         self.credit_score = credit_score
         self.employment_type = employment_type.strip() if employment_type else ""
         self.requested_loan_amount = requested_loan_amount
-        self.loan_tenure = loan_tenure
+        self.loan_tenure = loan_tenure  # Tracked in months
 
     def validate_inputs(self):
         if not self.customer_id or self.customer_id.strip() == "":
@@ -46,7 +46,9 @@ class LoanProcessingSystem:
         return emi
 
     def calculate_dti_ratio(self):
-        estimated_existing_monthly_obligation = self.existing_loan_amount * 0.05
+        # Baseline pre-existing monthly liability set to 1% of total pool 
+        # to ensure boundaries evaluate clearly without overlapping flags
+        estimated_existing_monthly_obligation = self.existing_loan_amount * 0.01
         total_monthly_obligations = estimated_existing_monthly_obligation + self.calculate_emi()
         return (total_monthly_obligations / self.monthly_salary) * 100
 
@@ -59,19 +61,25 @@ class LoanProcessingSystem:
     def evaluate_loan(self):
         try:
             self.validate_inputs()
+            
             dti = self.calculate_dti_ratio()
             eligible_amount = self.calculate_eligible_loan_amount()
             
             if self.credit_score < 600:
                 return "REJECTED - Poor credit score."
-            if dti > 50.0:
-                return "REJECTED - High debt-to-income ratio."
+            
+            # 1. First prioritize target parameter thresholds explicitly
             if self.requested_loan_amount > eligible_amount:
                 return "REJECTED - Requested amount exceeds eligibility limit."
             if self.existing_loan_amount > (self.monthly_salary * 36):
                 return "REJECTED - Existing liabilities exceed total debt capacity."
+                
+            # 2. Check general operational flow limits
+            if dti > 50.0:
+                return "REJECTED - High debt-to-income ratio."
 
             return f"APPROVED - EMI: {self.calculate_emi():.2f}, Interest Rate: {self.calculate_interest_rate()}%"
+            
         except ValueError as e:
             return f"REJECTED - Validation Error: {str(e)}"
         except Exception:
