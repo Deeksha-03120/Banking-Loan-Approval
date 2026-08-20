@@ -1,5 +1,4 @@
 import sys
-# Ties directly into your main class file logic 
 from LoanProcessingSystem import LoanProcessingSystem
 
 def run_qa_suite():
@@ -53,7 +52,7 @@ def run_qa_suite():
         print("[PASS] Test 5: DTI safeguard calculation rejected unbalanced risk profile.")
         tests_passed += 1
     else:
-        print("[FAIL] Test 5: System failed to prevent hyper-extended DTI ratios.")
+        print(f"[FAIL] Test 5: System failed to prevent hyper-extended DTI ratios. Result: {high_dti_test.evaluate_loan()}")
 
     # Test 6: Dynamic Pricing Across Different Employment Categories
     total_tests += 1
