@@ -10,7 +10,7 @@ class LoanProcessingSystem:
         self.credit_score = credit_score
         self.employment_type = employment_type.strip() if employment_type else ""
         self.requested_loan_amount = requested_loan_amount
-        self.loan_tenure = loan_tenure  # Tracked in months
+        self.loan_tenure = loan_tenure  # In months
 
     def validate_inputs(self):
         if not self.customer_id or self.customer_id.strip() == "":
@@ -46,7 +46,7 @@ class LoanProcessingSystem:
         return emi
 
     def calculate_dti_ratio(self):
-        # Balanced baseline existing monthly liability to cleanly capture high DTI limits
+        # 2% factor to cleanly evaluate debt-to-income checks separately
         estimated_existing_monthly_obligation = self.existing_loan_amount * 0.02
         total_monthly_obligations = estimated_existing_monthly_obligation + self.calculate_emi()
         return (total_monthly_obligations / self.monthly_salary) * 100
@@ -67,13 +67,15 @@ class LoanProcessingSystem:
             if self.credit_score < 600:
                 return "REJECTED - Poor credit score."
             
-            # Explicitly capture extreme DTI variances or total overall capacity breaches
-            if dti > 50.0:
-                return "REJECTED - High debt-to-income ratio."
-            if self.requested_loan_amount > eligible_amount:
-                return "REJECTED - Requested amount exceeds eligibility limit."
+            # CRITICAL ORDER FIX: Evaluate structural capacity boundaries BEFORE checking DTI limits
             if self.existing_loan_amount > (self.monthly_salary * 36):
                 return "REJECTED - Existing liabilities exceed total debt capacity."
+                
+            if self.requested_loan_amount > eligible_amount:
+                return "REJECTED - Requested amount exceeds eligibility limit."
+                
+            if dti > 50.0:
+                return "REJECTED - High debt-to-income ratio."
 
             return f"APPROVED - EMI: {self.calculate_emi():.2f}, Interest Rate: {self.calculate_interest_rate()}%"
             
