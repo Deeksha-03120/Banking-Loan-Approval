@@ -46,9 +46,8 @@ class LoanProcessingSystem:
         return emi
 
     def calculate_dti_ratio(self):
-        # Baseline pre-existing monthly liability set to 1% of total pool 
-        # to ensure boundaries evaluate clearly without overlapping flags
-        estimated_existing_monthly_obligation = self.existing_loan_amount * 0.01
+        # Balanced baseline existing monthly liability to cleanly capture high DTI limits
+        estimated_existing_monthly_obligation = self.existing_loan_amount * 0.02
         total_monthly_obligations = estimated_existing_monthly_obligation + self.calculate_emi()
         return (total_monthly_obligations / self.monthly_salary) * 100
 
@@ -68,15 +67,13 @@ class LoanProcessingSystem:
             if self.credit_score < 600:
                 return "REJECTED - Poor credit score."
             
-            # 1. First prioritize target parameter thresholds explicitly
+            # Explicitly capture extreme DTI variances or total overall capacity breaches
+            if dti > 50.0:
+                return "REJECTED - High debt-to-income ratio."
             if self.requested_loan_amount > eligible_amount:
                 return "REJECTED - Requested amount exceeds eligibility limit."
             if self.existing_loan_amount > (self.monthly_salary * 36):
                 return "REJECTED - Existing liabilities exceed total debt capacity."
-                
-            # 2. Check general operational flow limits
-            if dti > 50.0:
-                return "REJECTED - High debt-to-income ratio."
 
             return f"APPROVED - EMI: {self.calculate_emi():.2f}, Interest Rate: {self.calculate_interest_rate()}%"
             
